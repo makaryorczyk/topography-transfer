@@ -1,3 +1,6 @@
+![example workflow](https://github.com/makaryorczyk/topography-transfer/actions/workflows/python-app.yml/badge.svg)
+![versions](https://img.shields.io/pypi/pyversions/pybadges.svg)
+
 topography-transfer
 ==============================
 
