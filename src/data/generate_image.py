@@ -1,18 +1,13 @@
 import cv2
 import numpy as np
-from PIL import Image
 
 import random
 from typing import List, Tuple
 import math
-import os
 
-from _models import ImageDetails
+import pkg_resources
 
-ABSOLUTE_PATH = os.path.dirname("topography-transfer")
-NOISE_PATH = ABSOLUTE_PATH+"data/interim/generated/noise/"
-GENERATED_IMAGES_PATH = ABSOLUTE_PATH+"data/interim/generated/frames/"
-    
+from src.data._models import ImageDetails
 
 def _check_image(size: Tuple[int, int], epsilon: float, ring_center: Tuple[int, int], brightness: Tuple[int, int]) -> None:
     width, height = size
@@ -87,6 +82,16 @@ def generate_pure_image(size: Tuple[int, int],
     img=img.astype(np.uint8)
     return img
 
+def load_random_noise_filename() -> str:
+    """Load filename of random noise from package sample dataset
+
+    :return: Name of the .png file
+    :rtype: str
+    """
+    noise_file_index = random.randint(0, 24)
+    file = pkg_resources.resource_filename(__name__, f"/samples/noise/{noise_file_index}.png")
+    return file
+
 def add_noise_to_image(pure_image: np.array, noise: np.array) -> np.array:
     """Add random noise to the pure image
 
@@ -124,8 +129,11 @@ def generate_image(epsilon: float,
     """
     _check_image(size, epsilon, ring_center, brightness)
     
+    
     pure_image = generate_pure_image(size, epsilon, ring_center, brightness)
-    random_noise_image = cv2.imread(NOISE_PATH+random.choice(os.listdir(NOISE_PATH)))
+    file = load_random_noise_filename()
+    random_noise_image = cv2.imread(file)
+    
     if ( random_noise_image.shape[:2] != size):
         random_noise_image = cv2.resize(random_noise_image, size, interpolation=cv2.INTER_AREA)
     noised_image = add_noise_to_image(pure_image, random_noise_image)

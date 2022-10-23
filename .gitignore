@@ -1,2 +1,7 @@
 /data
 /src/data/__pycache__
+/build
+/dist
+/src/__pycache__
+/src/data/samples
+/test_image.egg-info

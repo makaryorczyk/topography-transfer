@@ -9,8 +9,8 @@ from tqdm import tqdm
 import os
 
 
-from generate_image import generate_image
-from _models import ImageFileDetails
+from src.data.generate_image import generate_image
+from src.data._models import ImageFileDetails
 
 
 
