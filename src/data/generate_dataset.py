@@ -2,8 +2,6 @@ from typing import Dict, List, Tuple
 import numpy as np
 import pandas as pd
 import cv2
-from PIL import Image
-from zipfile import ZipFile
 import random
 from tqdm import tqdm
 import os
@@ -11,6 +9,8 @@ import os
 
 from src.data.generate_image import generate_image
 from src.data._models import ImageFileDetails
+
+from src.data.generate_utils import save2directory, save2zip
 
 
 
@@ -25,43 +25,7 @@ def _check_args(path: str, n_copies: int, epsilon_step: float, zipfile: bool, fi
         if not filename:
             raise Exception("In case of exporting dataset to zipfile, filename must be provided.")
         if filename[-4:] != ".zip":
-            raise Exception("Provide filename with .zip extension, e.g. \"dataset.zip\"")
-
-
-
-def save2zip(img: np.array, img_filename: str, filename: str, path:str) -> None:
-    """Save image to the .zip file
-
-    :param img: 2D array which represents an image
-    :type img: np.array
-    :param img_filename: Name of the image file
-    :type img_filename: str
-    :param filename: Name of the .zip file
-    :type filename: str
-    :param path: Path to the directory where .zip file is stored
-    :type path: str
-    """
-    zip_path = filename
-    if path:
-        zip_path = path+filename
-
-    _, encoded_image = cv2.imencode(".png", img)
-    with ZipFile(zip_path, "a") as zip:
-        zip.writestr(img_filename, encoded_image.tobytes())
-        
-def save2directory(img: np.array, img_filename: str, path: str) -> None:
-    """Save image to the directory
-
-    :param img: 2D array which represents an image
-    :type img: np.array
-    :param img_filename: Name of the image file
-    :type img_filename: str
-    :param path: Path to the output directory
-    :type path: str
-    """
-    img = Image.fromarray(img)
-    img.save(path+img_filename)
-        
+            raise Exception("Provide filename with .zip extension, e.g. \"dataset.zip\"")        
         
 
 def parameters2csv(parameters: List[Dict], path: str, parameters_filename: str) -> None:
@@ -84,10 +48,12 @@ def generate_balanced_dataset(path: str,
                               epsilon_step: float=0.001,
                               size: Tuple[int, int]=(640, 480),
                               brightness: Tuple[int, int]=(80,210),
+                              center_shift: float = 0.01,
                               zipfile: bool=False,
                               filename: str=None,
                               save_parameters: bool=True,
-                              parameters_filename: str="parameters.csv"
+                              parameters_filename: str="parameters.csv",
+                              seed: int = None
                               ) -> None:
     """Generate balanced dataset and save to the output directory or .zip file.
 
@@ -103,6 +69,8 @@ def generate_balanced_dataset(path: str,
     :type size: Tuple[int, int], optional
     :param brightness: Brightness range of each pixel, defaults to (80,210)
     :type brightness: Tuple[int, int], optional
+    :param center_shift: Percentage of random shifting ring center in the image, defaults to 0.01.
+    :type brightness: Tuple[int, int], optional
     :param zipfile: Set to True if output images should be compressed to .zip file, defaults to False
     :type zipfile: bool, optional
     :param filename: Name of output .zip file. Need to be provided if zipfile is True, defaults to None
@@ -111,18 +79,22 @@ def generate_balanced_dataset(path: str,
     :type save_parameters: bool, optional
     :param parameters_filename: Name of parameters file, defaults to "parameters.csv"
     :type parameters_filename: str, optional
+    :param seed: Set seed to create identical dataset each time.
+    :type parameters_filename: int, optional
     """
     _check_args(path, n_copies, epsilon_step, zipfile, filename)
     
+    if seed:
+        random.seed(seed)
+    
     min_epsilon, max_epsilon = epsilon_range
     width, height = size
-    max_shift_perc = 0.05
     
-    max_width_center_shift =  width * max_shift_perc
+    max_width_center_shift =  width * center_shift
     min_width_center = int(width/2 - max_width_center_shift)
     max_width_center = int(width/2 + max_width_center_shift)
     
-    max_height_center_shift = height * max_shift_perc
+    max_height_center_shift = height * center_shift
     min_height_center = int(height/2 - max_height_center_shift)
     max_height_center = int(height/2 + max_height_center_shift)
     
@@ -134,7 +106,7 @@ def generate_balanced_dataset(path: str,
         for _ in range(n_copies):
             ring_center = (random.randint(min_width_center, max_width_center),
                            random.randint(min_height_center, max_height_center))
-            img = generate_image(_epsilon, size, ring_center, brightness)
+            img = generate_image(_epsilon, size, ring_center, brightness, seed)
             img_filename = f"{str(img_index).zfill(5)}.png"
             if zipfile:
                 save2zip(img, img_filename, filename, path)

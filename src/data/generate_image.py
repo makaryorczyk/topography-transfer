@@ -45,7 +45,7 @@ def compute_single_pixel(x: int,
     :rtype: float
     """
     width_ring_center, height_ring_center = ring_center
-    value = (diff_brightness * math.cos(2*math.pi*(epsilon + ((pow((x - width_ring_center)*2, 2) + pow((y - height_ring_center)*2, 2)) / diff_between_rings ))))
+    value = (diff_brightness * math.cos(2*math.pi*(1.0-epsilon + ((pow((x - width_ring_center)*2, 2) + pow((y - height_ring_center)*2, 2)) / diff_between_rings ))))
     return value
 
 def generate_pure_image(size: Tuple[int, int],
@@ -82,12 +82,13 @@ def generate_pure_image(size: Tuple[int, int],
     img=img.astype(np.uint8)
     return img
 
-def load_random_noise_filename() -> str:
+def load_random_noise_filename(seed: int=None) -> str:
     """Load filename of random noise from package sample dataset
 
     :return: Name of the .png file
     :rtype: str
     """
+    random.seed(seed)
     noise_file_index = random.randint(0, 24)
     file = pkg_resources.resource_filename(__name__, f"/samples/noise/{noise_file_index}.png")
     return file
@@ -113,6 +114,7 @@ def generate_image(epsilon: float,
                    size: Tuple[int, int]=(640, 480),
                    ring_center: Tuple[int, int]=(320, 240),
                    brightness: Tuple[int, int]=(80, 210),
+                   seed: int=None
                     ) -> np.array:
     """Generate the image
 
@@ -131,7 +133,7 @@ def generate_image(epsilon: float,
     
     
     pure_image = generate_pure_image(size, epsilon, ring_center, brightness)
-    file = load_random_noise_filename()
+    file = load_random_noise_filename(seed)
     random_noise_image = cv2.imread(file)
     
     if ( random_noise_image.shape[:2] != size):

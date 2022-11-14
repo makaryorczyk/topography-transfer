@@ -6,7 +6,7 @@ from tqdm import tqdm
 import os
 import pkg_resources
 
-from src.data.generate_dataset import save2directory
+from src.data.generate_utils import save2directory, save2zip
 
 def _check_args(num_images: int, num_used_raw_image: int):
     if num_images <= 0:
@@ -56,7 +56,12 @@ def generate_random_noise(num_used_raw_images: int=100, path_to_raw: str=None) -
     return noise_image.astype(np.uint8)
 
 
-def generate_noise_dataset(out: str, num_images: int=50, num_used_raw_images: int=100, path_to_raw: str=None) -> None:
+def generate_noise_dataset( path: str, 
+                            num_images: int=50, 
+                            num_used_raw_images: int=100, 
+                            path_to_raw: str=None,
+                            zipfile: bool=False,
+                            zip_filename: str=None) -> None:
     """Generate random noise images
 
     :param num_images: Number of the generated noise images, defaults to 50
@@ -67,7 +72,11 @@ def generate_noise_dataset(out: str, num_images: int=50, num_used_raw_images: in
     _check_args(num_images, num_used_raw_images)
     for frame in tqdm(range(num_images)):
         noise_image = generate_random_noise(num_used_raw_images, path_to_raw)
-        save2directory(noise_image, img_filename=f"{frame}.png", path=out)
+        
+        if zipfile:
+            save2zip(noise_image, img_filename=f"{frame}.png", filename=zip_filename, path=path)
+        else:
+            save2directory(noise_image, img_filename=f"{frame}.png", path=path)
 
 
 
