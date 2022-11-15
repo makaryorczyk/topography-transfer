@@ -41,7 +41,7 @@ def parameters2csv(parameters: List[Dict], path: str, parameters_filename: str) 
     df = pd.DataFrame.from_dict(parameters)
     df.to_csv(path+parameters_filename, encoding='utf-8', index=False)
 
-
+# TODO: correct docstrings
 def generate_balanced_dataset(path: str,
                               n_copies: int,
                               epsilon_range: Tuple[float, float]=(0.0, 1.0), 
@@ -53,6 +53,7 @@ def generate_balanced_dataset(path: str,
                               filename: str=None,
                               save_parameters: bool=True,
                               parameters_filename: str="parameters.csv",
+                              noise_path: str=None,
                               seed: int = None
                               ) -> None:
     """Generate balanced dataset and save to the output directory or .zip file.
@@ -106,12 +107,15 @@ def generate_balanced_dataset(path: str,
         for _ in range(n_copies):
             ring_center = (random.randint(min_width_center, max_width_center),
                            random.randint(min_height_center, max_height_center))
-            img = generate_image(_epsilon, size, ring_center, brightness, seed)
+            
+            img = generate_image(_epsilon, size, ring_center, brightness, noise_path, seed)
             img_filename = f"{str(img_index).zfill(5)}.png"
+            
             if zipfile:
                 save2zip(img, img_filename, filename, path)
             else:
                 save2directory(img, img_filename ,path)
+            
             if save_parameters:
                 img_details = ImageFileDetails(filename=img_filename,
                                                 width=width,
