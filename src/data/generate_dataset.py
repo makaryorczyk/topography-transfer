@@ -7,7 +7,7 @@ import os
 
 
 from src.data.generate_image import generate_image
-from src.data._models import ImageFileDetails
+from src.data._models import ImageDetails
 
 from src.data.generate_utils import save2directory, save2zip
 
@@ -135,15 +135,16 @@ def generate_balanced_dataset(path: str,
                 save2directory(img, img_filename ,path)
             
             if save_parameters:
-                img_details = ImageFileDetails(filename=img_filename,
-                                                width=width,
+                img_details = ImageDetails( filename=img_filename,
+                                               width=width,
                                                 height=height,
                                                 epsilon=_epsilon,
                                                 ring_center_width=ring_center[0],
                                                 ring_center_height=ring_center[1],
                                                 min_brightness=brightness[0],
                                                 max_brightness=brightness[1],
-                                                used_noise=choosen_noises[img_index])
+                                                used_noise=choosen_noises[img_index]
+                                                )
                 parameters.append(img_details.dict())
             img_index += 1
     parameters2csv(parameters, path, parameters_filename)
