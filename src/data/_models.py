@@ -8,6 +8,7 @@ class ImageDetails(BaseModel):
     ring_center_height: int
     min_brightness: int
     max_brightness: int
+    used_noise: int
     
     @validator('width')
     def _check_width(cls, width) -> None:
